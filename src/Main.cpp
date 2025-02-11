@@ -23,7 +23,7 @@ json decode_bencoded_value(const std::string& encoded_value) {
         }
     } else if (encoded_value[0] == 'i' && encoded_value[encoded_value.size()-1] == 'e'){
         std::string num_str = encoded_value.substr(1,(encoded_value.size()-2));
-        int num = atoi(num_str.c_str());
+        long int num = atol(num_str.c_str());
         return json(num);
     }else {
         throw std::runtime_error("Unhandled encoded value: " + encoded_value);
