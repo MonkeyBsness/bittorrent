@@ -8,15 +8,20 @@
 
 using json = nlohmann::json;
 
+json decode_bencoded_value(const std::string& encoded_value, size_t& index);
+
 json decode_string(const std::string& encoded_value, size_t& index){
     // Example: "5:hello" -> "hello"
-    size_t colon_index = encoded_value.find(':');
-    // std::cerr << colon_index << std::endl;
+    size_t colon_index = encoded_value.find(':', index);
+
+
     if (colon_index != std::string::npos) {
-        std::string number_string = encoded_value.substr(0, colon_index);
+        std::string number_string = encoded_value.substr(index, colon_index);
         size_t number = std::atoll(number_string.c_str());
         std::string str = encoded_value.substr(colon_index + 1, number);
         index = index + number + 1;
+
+
 
         return json(str);
     } else {
@@ -25,11 +30,11 @@ json decode_string(const std::string& encoded_value, size_t& index){
 }
 
 json decode_int(const std::string& encoded_value, size_t& index){
-    size_t end = encoded_value.find('e');
+    size_t end = encoded_value.find('e', index);
     index++;
     std::string num_str = encoded_value.substr(index, (end - index));
     int64_t num = std::atoll(num_str.c_str());
-    index = end + 1;
+    index = end;
     return json(num);
 }
 
@@ -37,9 +42,12 @@ json decode_list(const std::string& encoded_value, size_t& index){
     index++;
     json list = json::array();
     while (encoded_value[index] != 'e'){
+        //std::cerr << "at dl: " <<encoded_value.substr(index) << '\n';
         list.push_back(decode_bencoded_value(encoded_value, index));
+        index++;
+        //std::cerr << "index at dl: " << index << std::endl;
     }
-    index++;
+
     return list;
 }
 
