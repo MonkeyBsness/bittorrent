@@ -18,7 +18,10 @@ json decode_string(const std::string& encoded_value, size_t& index){
         std::string number_string = encoded_value.substr(index, colon_index);
         size_t number = std::atoll(number_string.c_str());
         std::string str = encoded_value.substr(colon_index + 1, number);
-        index = index + number + 1;
+        index = colon_index + number;
+
+        //std::cerr << "at s: " <<encoded_value.substr(index) << '\n';
+        //std::cerr << "i: "<< index<< "num:"<<number << '\n';
 
         return json(str);
     } else {
@@ -55,6 +58,7 @@ json decode_dictionarie(const std::string& encoded_value, size_t& index){
     while (encoded_value[index] != 'e') {
         json key = decode_bencoded_value(encoded_value, index);
         index++;
+        std::cerr << "at d: " <<encoded_value.substr(index) << '\n';
         json val = decode_bencoded_value(encoded_value, index);
         index++;
         dictionarie.insert({key, val});
@@ -66,15 +70,19 @@ json decode_dictionarie(const std::string& encoded_value, size_t& index){
 json decode_bencoded_value(const std::string& encoded_value, size_t& index){
 
     if (std::isdigit(encoded_value[index])) {
+        //std::cerr << "s" << std::endl;
         return decode_string(encoded_value, index);
 
     } else if (encoded_value[index] == 'i') {
+        //std::cerr << "i" << std::endl;
         return decode_int(encoded_value, index);
 
     } else if (encoded_value[index] == 'l') {
+        //std::cerr << "l" << std::endl;
         return decode_list(encoded_value, index);
 
     } else if (encoded_value[index] == 'd') {
+        //std::cerr << "d" << std::endl;
         return decode_dictionarie(encoded_value, index);
         
     }else {
