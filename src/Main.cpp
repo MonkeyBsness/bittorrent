@@ -14,14 +14,11 @@ json decode_string(const std::string& encoded_value, size_t& index){
     // Example: "5:hello" -> "hello"
     size_t colon_index = encoded_value.find(':', index);
 
-
     if (colon_index != std::string::npos) {
         std::string number_string = encoded_value.substr(index, colon_index);
         size_t number = std::atoll(number_string.c_str());
         std::string str = encoded_value.substr(colon_index + 1, number);
         index = index + number + 1;
-
-
 
         return json(str);
     } else {
@@ -51,14 +48,36 @@ json decode_list(const std::string& encoded_value, size_t& index){
     return list;
 }
 
+json decode_dictionarie(const std::string& encoded_value, size_t& index){
+    index++;
+    auto dictionarie = nlohmann::ordered_map<json, json>();
+
+    while (encoded_value[index] != 'e') {
+        json key = decode_bencoded_value(encoded_value, index);
+        index++;
+        json val = decode_bencoded_value(encoded_value, index);
+        index++;
+        dictionarie.insert({key, val});
+    }
+
+    return json(dictionarie);
+}
+
 json decode_bencoded_value(const std::string& encoded_value, size_t& index){
+
     if (std::isdigit(encoded_value[index])) {
         return decode_string(encoded_value, index);
+
     } else if (encoded_value[index] == 'i') {
         return decode_int(encoded_value, index);
+
     } else if (encoded_value[index] == 'l') {
         return decode_list(encoded_value, index);
-    } else {
+
+    } else if (encoded_value[index] == 'd') {
+        return decode_dictionarie(encoded_value, index);
+        
+    }else {
         throw std::runtime_error("Unhandled encoded value: " + encoded_value);
     }
 }
