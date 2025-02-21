@@ -130,19 +130,11 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        std::ifstream infile(argv[2], std::ios::binary);
-        std::string line = "";
+        std::ifstream file(argv[2], std::ios::binary);
+        std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        file.close();
 
-        if (infile.is_open()){
-            while (getline(infile, line)) {
-                line.append(line);
-            }
-            infile.close();
-        } else {
-            std::cerr << "Error opening file." << std::endl;
-        }
-
-        json decoded_value = decode_bencoded_value(line);
+        json decoded_value = decode_bencoded_value(fileContent);
         json info = decoded_value["info"];
 
         std::cout << "Tracker URL: " << decoded_value["announce"].get<std::string>() << std::endl;
