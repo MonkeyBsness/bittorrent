@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
 
-        std::ifstream infile(argv[2]);
+        std::ifstream infile(argv[2], std::ios::binary);
         std::string line = "";
 
         if (infile.is_open()){
