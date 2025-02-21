@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <cctype>
@@ -58,7 +59,9 @@ json decode_dictionarie(const std::string& encoded_value, size_t& index){
     while (encoded_value[index] != 'e') {
         json key = decode_bencoded_value(encoded_value, index);
         index++;
-        std::cerr << "at d: " <<encoded_value.substr(index) << '\n';
+
+        //std::cerr << "at d: " <<encoded_value.substr(index) << '\n';
+        
         json val = decode_bencoded_value(encoded_value, index);
         index++;
         dictionarie.insert({key, val});
@@ -120,6 +123,33 @@ int main(int argc, char* argv[]) {
         std::string encoded_value = argv[2];
         json decoded_value = decode_bencoded_value(encoded_value);
         std::cout << decoded_value.dump() << std::endl;
+
+    }else if (command == "info"){
+        if (argc < 3) {
+            std::cerr << "Usage: " << argv[0] << " path to .torrent file" << std::endl;
+            return 1;
+        }
+
+        std::ifstream infile(argv[2]);
+        std::string line = "";
+
+        if (infile.is_open()){
+            while (getline(infile, line)) {
+                line.append(line);
+            }
+            infile.close();
+        } else {
+            std::cerr << "Error opening file." << std::endl;
+        }
+
+        json decoded_value = decode_bencoded_value(line);
+        json info = decoded_value["info"];
+
+        std::cout << "Tracker URL: " << decoded_value["announce"].get<std::string>() << std::endl;
+        std::cout << "Length: " << info["length"] << std::endl;
+
+
+
     } else {
         std::cerr << "unknown command: " << command << std::endl;
         return 1;
