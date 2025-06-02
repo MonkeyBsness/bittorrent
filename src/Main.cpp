@@ -150,6 +150,17 @@ int bencode(const json& value, std::string& encoded_value){
     return EXIT_SUCCESS;
 }
 
+void bToHex(const std::string& binary, std::string& out) {
+    std::ostringstream oss;
+    oss << std::hex << std::setfill('0');
+
+    for (unsigned char c : binary) {
+        oss << std::setw(2) << static_cast<int>(c);
+    }
+
+    out = oss.str();
+}
+
 
 
 int main(int argc, char* argv[]) {
@@ -176,6 +187,7 @@ int main(int argc, char* argv[]) {
         std::cout << decoded_value.dump() << std::endl;
 
     }else if (command == "info"){
+
         if (argc < 3) {
             std::cerr << "Usage: " << argv[0] << " path to .torrent file" << std::endl;
             return 1;
@@ -183,20 +195,28 @@ int main(int argc, char* argv[]) {
 
         std::ifstream file(argv[2], std::ios::binary);
         std::string fileContent((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-
-
         file.close();
 
         json decoded_value = decode_bencoded_value(fileContent);
-
         json info = decoded_value["info"];
-
         std::cout << "Tracker URL: " << decoded_value["announce"].get<std::string>() << std::endl;
         std::cout << "Length: " << info["length"] << std::endl;
 
         std::string out{};
         bencode(info, out);
         std::cout << "Info Hash: " << sha1(out) << std::endl;
+
+        std::cout << "Piece Length: " << info["piece length"] << std::endl;
+        std::string pieces{};
+        bToHex(info["pieces"], pieces);
+        int p_len = pieces.size() / 40;
+
+
+        for (int i = 0; i < p_len; ++i) {
+            std::cout << pieces.substr(i*40, 40) << std::endl; 
+        }
+
+
 
     } else if (command == "test") {
         json t = json::object();
